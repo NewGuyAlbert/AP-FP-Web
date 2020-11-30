@@ -1,9 +1,12 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+const User = require("../models/User.js");
+
+/* GET users for test pourposes */
+router.get('/', async(req, res) =>{
+  const allUsers = await User.query().select('username');
+  res.send({response: allUsers});
 });
 
 module.exports = router;
