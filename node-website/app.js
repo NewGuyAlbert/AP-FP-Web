@@ -18,6 +18,33 @@ Model.knex(knex);
 
 var app = express();
 
+// setup session
+const session = require('express-session');
+// You need to copy the config.template.json file and fill out your own secret
+const config = require('./config/config.json');
+
+app.use(session({
+  name: 'sid',
+  secret: config.sessionSecret,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+      maxAge: 1000 * 60 * 60 * 2, // 1000 is one second
+      sameSite: true,
+      secure: false
+  }
+}));
+
+//ser rate limiter
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+
+app.use(limiter);
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -31,7 +58,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/account', accountRouter);
-app.use('/logout', authRouter);
+app.use('/', authRouter);
 
 
 // catch 404 and forward to error handler
